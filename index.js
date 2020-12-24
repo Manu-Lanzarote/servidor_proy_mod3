@@ -44,6 +44,8 @@ app.use(express.json());
 //Y ya tenemos preparado nuestro servidor para pasar las rutas
 //NO OLVIDAR CERRAR EL CÓDIGO  con     app.listen(3001)    (En este caso el localhost será el 3001 porque dejo el 3000 para React en el cliente)
 
+//Crear el archivo .gitignore     /node_modules
+
 //TENDREMOS QUE REPETIR ESTE PROCESO EN TODOS NUESTROS PROYECTOS
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
