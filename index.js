@@ -32,6 +32,8 @@ MongoClient.connect("mongodb://localhost:27017", function (err, client) {
 });
 
 //Hay que instalar CORS en el servidor -- en el terminal npm i cors   --- y después importarlo. Esto hay que hacerlo por que si no lo instalo, cuando hacemos fetch desde el cliente, la consola me va a tirar un error CORS "Access-Control-Allow-Origin" "Intercambio-de-recursos-de-origen-cruzado" CORS es un protocolo estandar que nos permite acceder a recursos de diferentes dominios, por ejemplo, los iconos o las fuentes externas, o los datos de APIs.
+
+//npm i cors           en el terminal
 const cors = require("cors");
 app.use(cors());
 
@@ -48,6 +50,16 @@ app.use(express.json());
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //RUTAS GET, POST, PUT, DELETE
+//SOBRE LA LÓGICA. Hay que ver qué es lo que se necesita del servidor en cada caso.
+
+//En el caso de las rutas tipo GET, para obtener ls zonas sólo necesito indicarle qué coleccion, (zona de buceo) quiero obtener.
+
+//En el caso de la ruta tipo POST, quiero añadir al servidor un objeto completo (una inmersión), por lo que sólo tengo que indicarle a qué colección voy a añadir el objeto (req.body.lugar) para enviarle el objeto completo (req.body)
+
+//En el caso de la ruta tipo PUT, quiero modificar un objeto que ya existe por lo que tendré pasar al servidor un objeto completo con las modificaciones que quiero hacer. Por eso necesito enviar de nuevo todos los valores del objeto (inmersión) a excepción del lugar y del nombre, que obviamente no pueden cambiar.
+
+//En el caso de la ruta tipo DELETE lo que le envío al servidor el lugar (req.body.lugar) y el nombre
+//(req.body.nombre). (Pido también el lugar por que podría haber dos inmersiones con el mismo nombre que estubieran en diferentes lugares).
 
 //Lanzarote tiene 4 zonas de buceo, así que crearé un app.get por cada una de ellas con su correspondiente ruta.
 //Playa Blanca
@@ -111,6 +123,8 @@ app.get("/puertodelcarmen/", function (req, res) {
 //GET
 
 //Ruta post para dar al usuario la posibilidad de AÑADIR nuevos puntos de inmersión
+//En el caso de la ruta tipo POST, quiero añadir al servidor un objeto completo (una inmersión), por lo que sólo tengo que indicarle a qué colección voy a añadir el objeto (req.body.lugar) para enviarle el objeto completo (req.body)
+
 app.post("/anyadir-inmersion/", function (req, res) {
   const nuevaInmersion = req.body;
   db.collection(req.body.lugar).insertOne(
@@ -129,6 +143,8 @@ app.post("/anyadir-inmersion/", function (req, res) {
 //Para probar esta ruta copio uno de los objetos que obtengo a través de GET, le quito la ID y lo pego dentro del cuadro del JSON
 
 //Ruta PUT para dar al usuario la posibilidad de MODIFICAR una inmersión
+//En el caso de la ruta tipo PUT, quiero modificar un objeto que ya existe por lo que tendré pasar al servidor un objeto completo con las modificaciones que quiero hacer. Por eso necesito enviar de nuevo todos los valores del objeto (inmersión) a excepción del lugar y del nombre, que obviamente no pueden cambiar.
+
 app.put("/editarInmersion/", function (req, res) {
   let editarInmersion = {
     imagen: req.body.imagen,
@@ -170,6 +186,9 @@ app.put("/editarInmersion/", function (req, res) {
 //Para probar esta ruta copio uno de los objetos que obtengo a través de GET, le quito la ID y lo pego dentro del cuadro del JSON y cambio alguno de los datos que tieen el objeto para comprobar que se hacen los cambios.
 
 //Ruta DELETE para borrar una inmersión
+//En el caso de la ruta tipo DELETE lo que le envío al servidor el lugar (req.body.lugar) y el nombre
+//(req.body.nombre). (Pido también el lugar por que podría haber dos inmersiones con el mismo nombre que estubieran en diferentes lugares).
+
 app.delete("/borrarInmersion/", function (req, res) {
   let lugar = req.body.lugar;
   let nombre = req.body.nombre;
@@ -187,6 +206,34 @@ app.delete("/borrarInmersion/", function (req, res) {
 //Pruebo la ruta en postman: localhost:3001/borrarInmersion/
 //DELETE - Body - raw - JSON
 //Para probar la ruta solo tengo que pasar el lugar y el nombre dentro del objeto.
+
+//Ruta post para comprobar nombre de usuario y contraseña. CÓDIGO DE ANDER
+//En el caso de la ruta tipo POST, quiero añadir al servidor un objeto completo con dos datos: nombre y usuario, por lo que sólo tengo que indicarle a qué colección voy a añadir el objeto (req.body.usuario) para enviarle el objeto completo (req.body)
+
+app.post("/comprobar-usuario/", function (req, res) {
+  const nuevoUsuario = req.body;
+  db.collection("USUARIOS")
+    .find({ usuario: req.body.usuario })
+    .toArray(function (err, datos) {
+      if (err !== null) {
+        res.send(err);
+      } else {
+        if (datos.length > 0) {
+          if (datos[0].contra === req.body.contra) {
+            res.send(datos);
+          } else {
+            res.send({ error: true, mensaje: "Contraseña incorrecta" });
+          }
+        } else {
+          res.send({ error: true, mensaje: "El usuario no existe" });
+        }
+      }
+    });
+});
+
+//Pruebo la ruta en postman: localhost:3001/anyadir-inmersion/
+//POST - Body - raw - JSON
+//Para probar esta ruta copio uno de los objetos que obtengo a través de GET, le quito la ID y lo pego dentro del cuadro del JSON
 
 //RECUERDA PROBAR TODAS LAS RUTAS  en postman para asegurarnos de que funcionan.
 //Para ello hay que reiniciar el servidor en el terminal con      control C           y          node index.js
